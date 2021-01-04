@@ -23,11 +23,9 @@ fn main() {
     Please enter the amount of threads you want to use, the more threads the more lag inducing, but faster, for reference I have a rtx2060 (GPU) and a Ryzen 5 2600 (cpu),
     with 16gb ram, and using 50 threads for this did lag my pc considerably, so just use that as a baseline:");
 
-    let mut n_jobs = read!();
+    let n_jobs = read!();
     
     let thread_pool = ThreadPool::new(n_jobs);
-
-    let barrier = Arc::new(Barrier::new(n_jobs + 1));
 
     for _ in 0..n_jobs {
         let tries_clone = Arc::clone(&tries);
