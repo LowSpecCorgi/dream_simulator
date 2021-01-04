@@ -10,6 +10,9 @@ edition = "2018"
 rand = "0.8.0"
 threadpool = "1.8.0"
 english-numbers = "0.3.3"
-rustplotlib = "0.0.4"
 simple_logger = "1.11.0"
 log = "0.4"
+text_io = "0.1.8"
+
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1"
