@@ -1,63 +1,64 @@
 use rand::prelude::*;
-use rustplotlib::Figure;
 use std::process;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Barrier};
 use std::thread;
+use threadpool::ThreadPool;
+use simple_logger::SimpleLogger;
+use log::{info, trace, warn};
 
 const BARTER_ATTEMPTS: i32 = 262;
 const ENDER_PEARL_CHANCE: f32 = 0.0473;
 const PEARLS_NEEDED: i32 = 41;
 
 fn main() {
+
+    SimpleLogger::new().init().unwrap();
+
     let tries = Arc::new(AtomicU64::new(0));
-    let thread_pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(12)
-        .build()
-        .unwrap();
+    let max = Arc::new(AtomicU64::new(0));
 
-    let tries_clone = Arc::clone(&tries);
-    let _handle = thread_pool.spawn(move || loop {
-        let mut thread_rng = rand::thread_rng();
-        let successful: i32 = run_attempts(
-            BARTER_ATTEMPTS,
-            ENDER_PEARL_CHANCE,
-            PEARLS_NEEDED,
-            &mut thread_rng,
-        );
+    let n_jobs = 50;
 
-        if Arc::clone(&tries_clone).load(Ordering::Relaxed) % 1000000 == 0 {
-            println!(
-                "[{:?}]({} Iterations) | Successful this iteration: {} | Didn't acvieve Dream level luck :(",
-                thread::current().id(),
-                english_numbers::convert_all_fmt(
-                    Arc::clone(&tries_clone).load(Ordering::Relaxed) as i64
-                ),
-                successful
+    let thread_pool = ThreadPool::new(n_jobs);
+
+    let barrier = Arc::new(Barrier::new(n_jobs + 1));
+
+    for _ in 0..n_jobs {
+        let tries_clone = Arc::clone(&tries);
+        let max_clone = Arc::clone(&max);
+
+        thread_pool.execute(move || loop {
+            
+            let mut thread_rng = rand::thread_rng();
+            let successful: i32 = run_attempts(
+                BARTER_ATTEMPTS,
+                ENDER_PEARL_CHANCE,
+                PEARLS_NEEDED,
+                &mut thread_rng,
             );
-        }
-        Arc::clone(&tries_clone).fetch_add(1, Ordering::SeqCst);
-    });
+            
+            if successful > max_clone.load(Ordering::Relaxed) as i32 {
+                max_clone.store(successful as u64, Ordering::SeqCst);
+            }
 
-    let mut thread_rng = rand::thread_rng();
-    loop {
-        let successful: i32 = run_attempts(
-            BARTER_ATTEMPTS,
-            ENDER_PEARL_CHANCE,
-            PEARLS_NEEDED,
-            &mut thread_rng,
-        );
-
-        if Arc::clone(&tries).load(Ordering::Relaxed) % 1000000 == 0 {
-            println!(
-                "[{:?}]({}) | Successful this iteration: {} | Didn't acvieve Dream level luck :(",
-                thread::current().id(),
-                english_numbers::convert_all_fmt(Arc::clone(&tries).load(Ordering::Relaxed) as i64),
-                successful
-            );
-        }
-        Arc::clone(&tries).fetch_add(1, Ordering::SeqCst);
+            if tries_clone.load(Ordering::Relaxed) % 10000000 == 0 {
+                log::info!(
+                    "[{:?}] [{} Iterations] | Successful this iteration: {} | Didn't acvieve Dream level luck :( | Max: {} |",
+                    thread::current().id(),
+                    english_numbers::convert_all_fmt(
+                        tries_clone.load(Ordering::Relaxed) as i64
+                    ),
+                    successful,
+                    max_clone.load(Ordering::SeqCst)
+                );
+            }
+            tries_clone.fetch_add(1, Ordering::SeqCst);
+        });
     }
+    let barrier = Arc::new(Barrier::new(n_jobs + 1));
+    barrier.wait();
+    
 }
 
 fn run_attempts(
