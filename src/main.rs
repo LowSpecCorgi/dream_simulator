@@ -47,7 +47,7 @@ fn main() {
 
             if tries_clone.load(Ordering::Relaxed) % 10000000 == 0 {
                 log::info!(
-                    "[{:?}] [{} Iterations] | Successful this iteration: {} | Didn't acvieve Dream level luck :( | Max: {} |",
+                    "[{:?}] [{} Iterations] | Successful this iteration: {} | Didn't achieve Dream level luck :( | Max: {} |",
                     thread::current().id(),
                     english_numbers::convert_all_fmt(
                         tries_clone.load(Ordering::Relaxed) as i64
