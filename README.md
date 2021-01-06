@@ -3,6 +3,9 @@ This program tries to mimic the ender pearl luck a youtuber called "[Dream](http
 
 You can see a demo of this in action [here](https://www.youtube.com/watch?v=sF_YLrItRW0&t=745s&ab_channel=Basilicous)
 
+## Dream luck achieved in 49 billion attempts!
+![Image](https://hypixel.net/attachments/1609918695809-png.2240318/)
+
 ## Installation instructions
 
 ### Windows
