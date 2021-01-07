@@ -15,7 +15,6 @@ const BLAZE_KILLS: i32 = 305;
 const BLAZE_ROD_CHANCE: f32=0.5;
 const BLAZE_RODS_NEEDED: i32=211;
 
-
 fn main() {
 
     SimpleLogger::new().init().unwrap();
@@ -23,7 +22,6 @@ fn main() {
     let tries = Arc::new(AtomicU64::new(0));
     let max_pearls = Arc::new(AtomicU64::new(0));
     let max_rods = Arc::new(AtomicU64::new(0));
-
 
     println!(r" 
     Please enter the amount of threads you want to use, the more threads the more lag inducing, but faster, for reference I have a rtx2060 (GPU) and a Ryzen 5 2600 (cpu),
@@ -38,7 +36,6 @@ fn main() {
         let max_pearls_clone = Arc::clone(&max_pearls);
         let max_rods_clone = Arc::clone(&max_rods);
 
-        
         thread_pool.execute(move || loop {
             
             let mut thread_rng = rand::thread_rng();
