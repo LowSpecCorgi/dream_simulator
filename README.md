@@ -1,9 +1,10 @@
 ## Dream simulator
-This program tries to mimic the ender pearl luck a youtuber called "[Dream](https://www.youtube.com/user/DreamTraps)" managed to get in his highly controversial 1.16 speedrun by running billions of simulations to try and match the luck gained in that speedrun.
+This program tries to mimic the luck a youtuber called "[Dream](https://www.youtube.com/user/DreamTraps)" managed to get in his highly controversial 1.16 speedrun by running billions of simulations to try and match the luck gained in that speedrun.
 
 You can see a demo of this in action [here](https://www.youtube.com/watch?v=sF_YLrItRW0&t=745s&ab_channel=Basilicous)
 
 ## Dream pearl luck achieved in 49 billion attempts!
+## This has been updated since and now supports blaze rods
 ![Image](https://hypixel.net/attachments/1609918695809-png.2240318/)
 
 ## Installation instructions
