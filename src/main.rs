@@ -46,7 +46,7 @@ fn main() {
             
             let mut thread_rng = rand::thread_rng();
             let successful: (i32,i32) = run_attempts(
-	        tries_clone.load(Ordering::Relaxed) as i64,
+	        tries_clone.load(Ordering::Relaxed) as u64,
                 BARTER_ATTEMPTS,
                 ENDER_PEARL_CHANCE,
                 PEARLS_NEEDED,
@@ -108,6 +108,7 @@ fn main() {
 }
 
 fn run_attempts(
+    tries: u64;
     barter_attempts: i32,
     ender_pearl_chance: f32,
     pearls_needed: i32,
@@ -131,7 +132,7 @@ fn run_attempts(
     }
     if successful.0 >= pearls_needed {
         if successful.1 >= rods_needed {
-            println!("~ Dream's luck was replicated! ~ ({}, {})", successful.0, successful.1);
+            println!("~ Dream's luck was replicated after {} iterations! ~ ({}, {})", tries, successful.0, successful.1);
             process::exit(0);
         }
     }
