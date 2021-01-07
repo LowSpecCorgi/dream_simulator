@@ -40,10 +40,10 @@ fn main() {
         let tries_clone = Arc::clone(&tries);
         let max_pearls_clone = Arc::clone(&max_pearls);
         let max_rods_clone = Arc::clone(&max_rods);
-	let pause_clone = Arc::clone(&pause_simulation);
+	    let pause_clone = Arc::clone(&pause_simulation);
 
         thread_pool.execute(move || loop {
-            
+        
             let mut thread_rng = rand::thread_rng();
             let successful: (i32,i32) = run_attempts(
 	        tries_clone.load(Ordering::Relaxed) as u64,
@@ -55,14 +55,14 @@ fn main() {
                 BLAZE_RODS_NEEDED,
                 &mut thread_rng,
             );
-	    let max_pearls_temp = max_pearls_clone.load(Ordering::Relaxed) as i32 ;
-	    let max_rods_temp = max_rods_clone.load(Ordering::Relaxed) as i32;
-            if successful.0 >= max_pearls_temp && successful.0 + successful.1 >= max_pearls_temp + max_rods_temp
-	       {
+            
+    	    let max_pearls_temp = max_pearls_clone.load(Ordering::Relaxed) as i32;
+    	    let max_rods_temp = max_rods_clone.load(Ordering::Relaxed) as i32;
+            if successful.0 >= max_pearls_temp && successful.0 + successful.1 >= max_pearls_temp + max_rods_temp {
                 max_pearls_clone.store(successful.0 as u64, Ordering::SeqCst);
                 max_rods_clone.store(successful.1 as u64, Ordering::SeqCst);
-              }
-
+            }
+    
             if tries_clone.load(Ordering::Relaxed) % 10000000 == 0 {
                 log::info!(
                     "[{:?}] [{} Iterations] | Successful this iteration: {} {} | Didn't achieve Dream level luck :( | Max Combined Pearls: {} Rods: {} ",
@@ -76,39 +76,37 @@ fn main() {
                     max_rods_clone.load(Ordering::SeqCst)
                 );
             }
-	    if pause_clone.load(Ordering::Relaxed){
-	      log::info!("[{:?}] [{} Iterations] | Thread paused",
-	        thread::current().id(),
-		tries_clone.load(Ordering::Relaxed) as i64);
-              while pause_clone.load(Ordering::Relaxed){
-	        thread::sleep(time::Duration::from_secs(1));
-	      };
-	      log::info!("[{:?}] [{} Iterations] | Thread resumed",
-	        thread::current().id(),
-		tries_clone.load(Ordering::Relaxed) as i64);
+            
+    	    if pause_clone.load(Ordering::Relaxed) {
+    	        log::info!(
+    	           "[{:?}] [{} Iterations] | Thread paused",
+    	           thread::current().id(),
+    	           tries_clone.load(Ordering::Relaxed) as i64);
+        		    
+                while pause_clone.load(Ordering::Relaxed) {
+        	            thread::sleep(time::Duration::from_secs(1));
+        	    }
+    	        log::info!("[{:?}] [{} Iterations] | Thread resumed",
+    	        thread::current().id(),
+    		    tries_clone.load(Ordering::Relaxed) as i64);
             };
-           tries_clone.fetch_add(1, Ordering::SeqCst);
+            tries_clone.fetch_add(1, Ordering::SeqCst);
         });
     }
-    loop{
-      let input: String = read!();
-      let code = input.as_str();
+    loop {
+        let input: String = read!();
+        let code = input.as_str();
       
-      pause_simulation.store (code == "s" || code == "S",Ordering::Relaxed);
-      if code == "s" || code == "S" {
+        pause_simulation.store (code == "s" || code == "S",Ordering::Relaxed);
+        if code == "s" || code == "S" {
         thread::sleep(time::Duration::from_secs(1));
-	log::info!("Press any Key + Enter to continue!");
-      }
+	    log::info!("Press any Key + Enter to continue!");
+        }
     }
-    
-    let barrier = Arc::new(Barrier::new(n_jobs + 1));
-    
-    barrier.wait();
-    
 }
 
 fn run_attempts(
-    tries: u64;
+    tries: u64,
     barter_attempts: i32,
     ender_pearl_chance: f32,
     pearls_needed: i32,
