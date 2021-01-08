@@ -1,12 +1,15 @@
 use rand::prelude::*;
-use std::process;
+use std::{fs::remove_file, process};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Arc, Barrier};
+use std::sync::Arc;
 use std::{thread, time};
 use threadpool::ThreadPool;
 use simple_logger::SimpleLogger;
 use log;
 use text_io::read;
+use json::*;
+use std::io::prelude::*;
+use std::fs::OpenOptions;
 
 const BARTER_ATTEMPTS: i32 = 262;
 const ENDER_PEARL_CHANCE: f32 = 0.0473;
@@ -18,18 +21,43 @@ const BLAZE_RODS_NEEDED: i32=211;
 fn main() {
 
     SimpleLogger::new().init().unwrap();
-
-    let tries = Arc::new(AtomicU64::new(0));
-    let max_pearls = Arc::new(AtomicU64::new(0));
-    let max_rods = Arc::new(AtomicU64::new(0));
-    let pause_simulation = Arc::new(AtomicBool::new(false));
-
+    
+    let tries: Arc<AtomicU64>;
+    let max_pearls: Arc<AtomicU64>;
+    let max_rods: Arc<AtomicU64>;
+    
     println!(r" 
     Please enter the amount of threads you want to use, the more threads the more lag inducing, but faster, for reference I have a rtx2060 (GPU) and a Ryzen 5 2600 (cpu),
     with 16gb ram, and using 50 threads for this did lag my pc considerably, so just use that as a baseline:");
 
     let n_jobs = read!();
+    
+    println!("Use saved data from last ran session? (Y/N):");
+    let mut saved_data: String = read!();
 
+    if saved_data == "Y" {
+        let mut file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .open("saved.json")
+            .unwrap();
+        
+        saved_data = "".to_string();
+        file.read_to_string(&mut saved_data).expect("Failed to read from file");
+        let parsed = json::parse(&saved_data.to_string()).unwrap();
+        tries = Arc::new(AtomicU64::new(parsed["tries"].as_u64().unwrap()));
+        max_pearls = Arc::new(AtomicU64::new(parsed["max_pearls"].as_u64().unwrap()));
+        max_rods = Arc::new(AtomicU64::new(parsed["max_rods"].as_u64().unwrap()));
+    }
+    else
+    {
+        tries = Arc::new(AtomicU64::new(0));
+        max_pearls = Arc::new(AtomicU64::new(0));
+        max_rods = Arc::new(AtomicU64::new(0));
+    }
+    let pause_simulation = Arc::new(AtomicBool::new(false));
+    
     println!(r"Press S + Enter to pause the Simulation. Starting in 5s");
     
     thread::sleep(time::Duration::from_secs(5));
@@ -93,15 +121,35 @@ fn main() {
             tries_clone.fetch_add(1, Ordering::SeqCst);
         });
     }
+    
     loop {
+    
         let input: String = read!();
         let code = input.as_str();
       
         pause_simulation.store (code == "s" || code == "S",Ordering::Relaxed);
         if code == "s" || code == "S" {
-        thread::sleep(time::Duration::from_secs(1));
-	    log::info!("Press any Key + Enter to continue!");
+            let data = object! {
+                "tries" => tries.load(Ordering::Relaxed),
+                "max_pearls" => max_pearls.load(Ordering::Relaxed),
+                "max_rods" => max_rods.load(Ordering::Relaxed)
+            };        
+        
+            let mut file = OpenOptions::new()
+                .read(true)
+                .write(true)
+                .create(true)
+                .open("saved.json")
+                .unwrap();
+            
+            remove_file("saved.json").expect("Failed to delete file!");            
+            file.write_all(data.to_string().as_bytes()).expect("Write failed");
+            
+            thread::sleep(time::Duration::from_secs(1));
+	        log::info!("Press any Key + Enter to continue!");
         }
+        
+        thread::sleep(time::Duration::from_secs(1));
     }
 }
 

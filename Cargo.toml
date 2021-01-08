@@ -1,6 +1,6 @@
 [package]
 name = "dream_simulator"
-version = "0.1.0"
+version = "2.0.0"
 authors = ["Basilicous <haroldthesenpai@gmail.com>"]
 edition = "2018"
 
@@ -13,6 +13,6 @@ english-numbers = "0.3.3"
 simple_logger = "1.11.0"
 log = "0.4"
 text_io = "0.1.8"
-
+json = "0.12.4"
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1"
