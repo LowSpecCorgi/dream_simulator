@@ -7,6 +7,10 @@ You can see a demo of this in action [here](https://www.youtube.com/watch?v=sF_Y
 ## This has been updated since and now supports blaze rods
 ![Image](https://hypixel.net/attachments/1609918695809-png.2240318/)
 
+## This program is being flagged as a virus!
+I don't know what causes this, but I did do a virus total, and no engines detect this as a virus.
+ #5 does talk about this problem if you want to learn more about it
+
 ## Installation instructions
 
 ### Windows
